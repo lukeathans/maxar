@@ -11,6 +11,7 @@ import {Circle as CircleStyle, Fill, Stroke, Style} from 'ol/style';
 import {OSM, Vector as VectorSource} from 'ol/source';
 import {Tile, Vector as VectorLayer} from 'ol/layer';
 
+
 const styles = {
   'MultiPolygon': new Style({
     stroke: new Stroke({
@@ -37,21 +38,25 @@ const styleFunction = function (feature) {
 };
 
 // here would be where we call the Flask app to populate the givenData variable
-let givenData = fetch('http://localhost:5000/geojson/', { 
+let givenData;
+let coordinates;
+let type;
+
+await fetch('http://localhost:5000/geojson/', { 
                 headers : { 
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
               }
-})
-              .then(function (response) {
-                return response.json();
-              });
-              // .then(function (text) {
-              //   console.log('GET response: ');
-              //   console.log(text)
-              // });
+            })
+              .then(res => res.json())
+              .then(data => givenData = data)
+              
+
 console.log("givenData: ",givenData)
-const coordinatesVec = givenData.coordinates
+coordinates = givenData.coordinates
+type = givenData.type
+
+
 
 const geojsonObject = {
   'type': 'FeatureCollection',
@@ -65,22 +70,23 @@ const geojsonObject = {
     {
       'type': 'Feature',
       'geometry': { 
-        'type': givenData.type,
-        'coordinates': [givenData.coordinates ]
+        'type': type,
+        'coordinates': [coordinates ]
       },
     }
   ]
   }
-// response = fetch('/geojson')
-// console.log(response)
+
+
 
   const source = new VectorSource({
     features: new GeoJSON().readFeatures(geojsonObject),
   });
 
   source.addFeature(new Feature(new Circle([19460000,-5050000], 25000)));
+  source.addFeature(new Feature(new MultiPolygon(coordinates)))
 
-  console.log("source: ", source)
+  //console.log("source: ", source)
   
   const vectorLayer = new VectorLayer({
     source: source,
