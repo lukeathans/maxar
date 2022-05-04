@@ -2,6 +2,7 @@ import './style.css';
 //import TileLayer from 'ol/layer/Tile';
 import 'ol/ol.css';
 import MultiPolygon from 'ol/geom/MultiPolygon';
+import Polygon from 'ol/geom/Polygon';
 import Feature from 'ol/Feature';
 import GeoJSON from 'ol/format/GeoJSON';
 import Map from 'ol/Map';
@@ -12,26 +13,6 @@ import {OSM, Vector as VectorSource} from 'ol/source';
 import {Tile, Vector as VectorLayer} from 'ol/layer';
 
 
-const styles = {
-  'MultiPolygon': new Style({
-    stroke: new Stroke({
-      color: 'red',
-      width: 1,
-    }),
-    fill: new Fill({
-      color: 'rgba(255, 255, 0, 0.1)',
-    }),
-  }),
-  'Circle': new Style({
-    stroke: new Stroke({
-      color: 'blue',
-      width: 2,
-    }),
-    fill: new Fill({
-      color: 'rgba(0,0,255,0.2)',
-    }),
-  }),
-};
 
 const styleFunction = function (feature) {
   return styles[feature.getGeometry().getType()];
@@ -71,7 +52,7 @@ const geojsonObject = {
       'type': 'Feature',
       'geometry': { 
         'type': type,
-        'coordinates': [coordinates ]
+        'coordinates': [coordinates]
       },
     }
   ]
@@ -83,10 +64,6 @@ const geojsonObject = {
     features: new GeoJSON().readFeatures(geojsonObject),
   });
 
-  source.addFeature(new Feature(new Circle([19460000,-5050000], 25000)));
-  source.addFeature(new Feature(new MultiPolygon(coordinates)))
-
-  //console.log("source: ", source)
   
   const vectorLayer = new VectorLayer({
     source: source,
@@ -103,37 +80,18 @@ var map = new ol.Map({
   ],
   view: new ol.View({
     center: ol.proj.fromLonLat([174.7787, -41.2924]),
-    zoom: 11
+    zoom: 10
   })
 });
 
-// Add tile layer over map with data from given file as source
 
-// var layer = new ol.layer.TileLayer({
-//   opacity: 1,
-//   zIndex: 100,
-//   source: [[174.990241669,-41.396484377]]
-// });
-// map.addLayer(layer);
+const aoiLayer = new ol.layer.VectorImage({
+  source: new ol.source.Vector({
+    url: 'http://localhost:5000/geojson/',
+    format: new ol.format.GeoJSON()
+  }),
+  visible: true,
+  title: "AoI"
+})
 
-
-
-
-
-
-
-
-
-// // ** defualt populated map from tutorial **
-// const map = new Map({
-//   target: 'map',
-//   layers: [
-//     new TileLayer({
-//       source: new OSM()
-//     })
-//   ],
-//   view: new View({
-//     center: [0, 0],
-//     zoom: 2
-//   })
-// });
+map.addLayer(aoiLayer)
